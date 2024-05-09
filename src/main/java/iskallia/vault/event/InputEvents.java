@@ -5,13 +5,17 @@ import iskallia.vault.client.gui.screen.AbilitySelectionScreen;
 import iskallia.vault.init.ModKeybinds;
 import iskallia.vault.init.ModNetwork;
 import iskallia.vault.network.message.AbilityKeyMessage;
+import iskallia.vault.network.message.AbilityQuickselectMessage;
 import iskallia.vault.network.message.OpenSkillTreeMessage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class InputEvents {
@@ -48,6 +52,17 @@ public class InputEvents {
     }
 
     private static void onInput(Minecraft minecraft, int key, int action) {
+        if(minecraft.screen != null || key == -1) {
+            return;
+        }
+
+        for(Map.Entry<String, KeyBinding> quickSelectKeybind : (Iterable<Map.Entry<String, KeyBinding>>)ModKeybinds.abilityQuickfireKey.entrySet()) {
+            if (((KeyBinding)quickSelectKeybind.getValue()).getKey().getValue() == key) {
+                if (action != 1) return;
+                ModNetwork.CHANNEL.sendToServer(new AbilityQuickselectMessage(quickSelectKeybind.getKey()));
+            }
+        }
+
         if (minecraft.screen == null && ModKeybinds.abilityWheelKey.getKey().getValue() == key) {
             if (action != GLFW.GLFW_PRESS) return;
             if (AbilitiesOverlay.learnedAbilities.size() <= 2) return;

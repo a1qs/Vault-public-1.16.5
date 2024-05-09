@@ -50,6 +50,11 @@ public class ModNetwork {
                 AbilityKeyMessage::decode,
                 AbilityKeyMessage::handle);
 
+        CHANNEL.registerMessage(nextId(), AbilityQuickselectMessage.class,
+                AbilityQuickselectMessage::encode,
+                AbilityQuickselectMessage::decode,
+                AbilityQuickselectMessage::handle);
+
         CHANNEL.registerMessage(nextId(), AbilityUpgradeMessage.class,
                 AbilityUpgradeMessage::encode,
                 AbilityUpgradeMessage::decode,
