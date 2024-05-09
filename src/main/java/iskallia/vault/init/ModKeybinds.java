@@ -28,7 +28,7 @@ public class ModKeybinds {
 
         for(AbilityGroup<?> group : ModConfigs.ABILITIES.getAll()) {
             String abilityDescription = group.getParentName().toLowerCase().replace(' ', '_');
-            abilityQuickfireKey.put(group.getParentName(), createKeyBinding("quickselect." + abilityDescription, KeyEvent.VK_0));
+            abilityQuickfireKey.put(group.getParentName(), createKeyBinding("quickselect." + abilityDescription, KeyEvent.VK_F13));
         }
     }
 
