@@ -17,15 +17,16 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.network.NetworkDirection;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AbilityTree implements INBTSerializable<CompoundNBT> {
 
     private final UUID uuid;
     private List<AbilityNode<?>> nodes = new ArrayList<>();
-    private HashMap<Integer, Integer> cooldowns = new HashMap<>();
+    public HashMap<Integer, Integer> cooldowns = new HashMap<>();
 
-    private int focusedAbilityIndex;
+    public int focusedAbilityIndex;
     private boolean active;
 
     private boolean swappingPerformed;
@@ -150,7 +151,50 @@ public class AbilityTree implements INBTSerializable<CompoundNBT> {
         return this;
     }
 
+//    private AbilityTree updateNewFocusedAbility(MinecraftServer server, Function<AbilityNode<?>, AbilityNode<?>> changeNodeFn) {
+//        List<AbilityNode<?>> learnedNodes = this.learnedNodes();
+//        if(this.swappingLocked) {
+//            return this;
+//        } else {
+//            if (!learnedNodes.isEmpty()) {
+//                boolean prevActive = this.active;
+//                this.active = false;
+//                AbilityNode<?> focusedAbility = this.getFocusedAbility();
+//                if (focusedAbility != null) {
+//                    NetcodeUtils.runIfPresent(server, this.uuid, player -> {
+//                        PlayerAbility.Behavior behavior = focusedAbility.getAbility().getBehavior();
+//                        getFocusedAbility().getAbility().onBlur(player);
+//                        if (prevActive) {
+//                            if (behavior == PlayerAbility.Behavior.PRESS_TO_TOGGLE) {
+//                                active = !active;
+//                                focusedAbility.getAbility().onAction(player, active);
+//                                putOnCooldown(server, focusedAbilityIndex, ModConfigs.ABILITIES.cooldownOf(getFocusedAbility(), player));
+//                            }
+//                            else if (behavior == PlayerAbility.Behavior.HOLD_TO_ACTIVATE) {
+//                                active = false;
+//                                focusedAbility.getAbility().onAction(player, active);
+//                                notifyActivity(server);
+//
+//                            }
+//                            else if (behavior == PlayerAbility.Behavior.RELEASE_TO_PERFORM) {
+//                                focusedAbility.getAbility().onAction(player, active);
+//                                putOnCooldown(server, focusedAbilityIndex, ModConfigs.ABILITIES.cooldownOf(getFocusedAbility(), player));
+//                            }
+//                        }
+//                    });
+//                }
+//
+//                AbilityNode<?> nextAttempt = (AbilityNode)changeNodeFn.apply(focusedAbility);
+//                AbilityNode<?> nextFocus = this.
+//            }
+//
+//        }
+//
+//    }
+
     public void keyDown(MinecraftServer server) {
+
+
         AbilityNode<?> focusedAbility = getFocusedAbility();
 
         if (focusedAbility == null) return;
@@ -222,12 +266,23 @@ public class AbilityTree implements INBTSerializable<CompoundNBT> {
             });
 
 
+            AbilityNode<?> toSelect = null;
+
+            for(AbilityNode<?> learnedNode : learnedNodes) {
+                if (learnedNode.getGroup().getParentName().equals(abilityIndex)) {
+                    toSelect = learnedNode;
+                    break;
+                }
+            }
+
             this.focusedAbilityIndex = abilityIndex;
 
             AbilityNode<?> newFocused = getFocusedAbility();
-            NetcodeUtils.runIfPresent(server, this.uuid, player -> {
-                newFocused.getAbility().onFocus(player);
-            });
+            if (newFocused != null) {
+                NetcodeUtils.runIfPresent(server, this.uuid, player -> {
+                    newFocused.getAbility().onFocus(player);
+                });
+            }
 
             syncFocusedIndex(server);
         }
